@@ -286,7 +286,6 @@
         modalCloseBtn.addEventListener('click', hideModal);
         modalBackdrop.addEventListener('click', hideModal);
 
-        // ** FIX: Use event delegation for ghost story buttons **
         const pubsList = document.getElementById('pubs-list');
         pubsList.addEventListener('click', async (e) => {
             const button = e.target.closest('.ghost-story-btn');
@@ -363,6 +362,7 @@
                     throw new Error("Received an unknown pub name from the API.");
                 }
 
+                // --- Map URL Generation ---
                 const markerLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
                 const mapsApiKey = "AIzaSyCUWUiYFlVr2kxtMTFunKeIdKdp9aLeFtA"; 
 
@@ -383,16 +383,18 @@
 
                 const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?size=600x300&maptype=roadmap&${markersString}&${pathString}&key=${mapsApiKey}`;
 
+                // ** FIX: Corrected the logic for building the Google Maps Directions URL **
                 let mapUrl;
-                if(originPoint) {
-                    const destination = encodeURIComponent(pubAddresses[orderedPubs[orderedPubs.length - 1]]);
+                const baseMapUrl = "https://www.google.com/maps/dir/?api=1&travelmode=walking";
+                const destination = encodeURIComponent(pubAddresses[orderedPubs[orderedPubs.length - 1]]);
+                
+                if (originPoint) {
                     const waypoints = orderedPubs.slice(0, -1).map(pubName => encodeURIComponent(pubAddresses[pubName])).join('|');
-                     mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${originPoint}&destination=${destination}&waypoints=${waypoints}&travelmode=walking`;
+                    mapUrl = `${baseMapUrl}&origin=${originPoint}&destination=${destination}&waypoints=${waypoints}`;
                 } else {
-                    const firstPub = encodeURIComponent(pubAddresses[orderedPubs[0]]);
-                    const lastPub = encodeURIComponent(pubAddresses[orderedPubs[orderedPubs.length - 1]]);
-                    const midWaypoints = orderedPubs.slice(1, -1).map(pubName => encodeURIComponent(pubAddresses[pubName])).join('|');
-                    mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${firstPub}&destination=${lastPub}&waypoints=${midWaypoints}&travelmode=walking`;
+                    const origin = encodeURIComponent(pubAddresses[orderedPubs[0]]);
+                    const waypoints = orderedPubs.slice(1, -1).map(pubName => encodeURIComponent(pubAddresses[pubName])).join('|');
+                     mapUrl = `${baseMapUrl}&origin=${origin}&destination=${destination}&waypoints=${waypoints}`;
                 }
 
                 let itineraryHtml = `<h2 class="!text-3xl">${crawlData.crawlName}</h2>`;
@@ -436,6 +438,7 @@
     </script>
 </body>
 </html>
+
 
 
 
