@@ -286,17 +286,22 @@
         modalCloseBtn.addEventListener('click', hideModal);
         modalBackdrop.addEventListener('click', hideModal);
 
-        document.querySelectorAll('.ghost-story-btn').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const pubCard = e.target.closest('.pub-card');
-                const pubName = pubCard.dataset.pubName;
-                const lore = pubCard.dataset.lore;
-                showModal(`A Ghostly Tale from ${pubName}`);
-                const prompt = `Tell me a short, atmospheric, and spooky ghost story (around 150-200 words) set in The ${pubName} in Edinburgh. The pub's lore says that ${lore}. Use this information to inspire the story. Make it feel like a tale told over a pint in a dim, historic pub. Use an old-fashioned, literary tone, like something from the 19th century.`;
-                const story = await callGemini(prompt);
-                const formattedStory = story ? story.replace(/\n/g, '<p class="mt-4"></p>') : '<p>The spirits are quiet right now. Please try again later.</p>';
-                updateModalContent(`<p class="body-font">${formattedStory}</p>`);
-            });
+        // ** FIX: Use event delegation for ghost story buttons **
+        const pubsList = document.getElementById('pubs-list');
+        pubsList.addEventListener('click', async (e) => {
+            const button = e.target.closest('.ghost-story-btn');
+            if (button) {
+                const pubCard = button.closest('.pub-card');
+                if (pubCard) {
+                    const pubName = pubCard.dataset.pubName;
+                    const lore = pubCard.dataset.lore;
+                    showModal(`A Ghostly Tale from ${pubName}`);
+                    const prompt = `Tell me a short, atmospheric, and spooky ghost story (around 150-200 words) set in The ${pubName} in Edinburgh. The pub's lore says that ${lore}. Use this information to inspire the story. Make it feel like a tale told over a pint in a dim, historic pub. Use an old-fashioned, literary tone, like something from the 19th century.`;
+                    const story = await callGemini(prompt);
+                    const formattedStory = story ? story.replace(/\n/g, '<p class="mt-4"></p>') : '<p>The spirits are quiet right now. Please try again later.</p>';
+                    updateModalContent(`<p class="body-font">${formattedStory}</p>`);
+                }
+            }
         });
         
         const pubSelectionContainer = document.getElementById('pub-selection');
@@ -338,7 +343,6 @@
             }
 
             try {
-                // Sanitize the response to ensure it's a valid JSON string
                 let jsonString = responseText;
                 const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
                 if (!jsonMatch) {
@@ -359,7 +363,6 @@
                     throw new Error("Received an unknown pub name from the API.");
                 }
 
-                // --- Map URL Generation ---
                 const markerLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
                 const mapsApiKey = "AIzaSyCUWUiYFlVr2kxtMTFunKeIdKdp9aLeFtA"; 
 
@@ -380,7 +383,6 @@
 
                 const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?size=600x300&maptype=roadmap&${markersString}&${pathString}&key=${mapsApiKey}`;
 
-                // Interactive map URL
                 let mapUrl;
                 if(originPoint) {
                     const destination = encodeURIComponent(pubAddresses[orderedPubs[orderedPubs.length - 1]]);
@@ -424,18 +426,17 @@
                         // Handle error or user denial
                         showModal('Location Denied');
                         updateModalContent('<p class="body-font">Could not get your location. Generating a route between the selected pubs instead.</p>');
-                        // Generate itinerary without a starting point after a short delay
                         setTimeout(() => generateItinerary(null), 1500);
                     }
                 );
             } else {
-                // Geolocation not supported
                 generateItinerary(null);
             }
         });
     </script>
 </body>
 </html>
+
 
 
 
