@@ -383,18 +383,22 @@
 
                 const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?size=600x300&maptype=roadmap&${markersString}&${pathString}&key=${mapsApiKey}`;
 
-                // ** FIX: Corrected the logic for building the Google Maps Directions URL **
+                // --- FIX: Corrected map URL logic ---
                 let mapUrl;
                 const baseMapUrl = "https://www.google.com/maps/dir/?api=1&travelmode=walking";
                 const destination = encodeURIComponent(pubAddresses[orderedPubs[orderedPubs.length - 1]]);
-                
+
                 if (originPoint) {
                     const waypoints = orderedPubs.slice(0, -1).map(pubName => encodeURIComponent(pubAddresses[pubName])).join('|');
                     mapUrl = `${baseMapUrl}&origin=${originPoint}&destination=${destination}&waypoints=${waypoints}`;
                 } else {
                     const origin = encodeURIComponent(pubAddresses[orderedPubs[0]]);
-                    const waypoints = orderedPubs.slice(1, -1).map(pubName => encodeURIComponent(pubAddresses[pubName])).join('|');
-                     mapUrl = `${baseMapUrl}&origin=${origin}&destination=${destination}&waypoints=${waypoints}`;
+                    if (orderedPubs.length > 1) {
+                         const waypoints = orderedPubs.slice(1, -1).map(pubName => encodeURIComponent(pubAddresses[pubName])).join('|');
+                         mapUrl = `${baseMapUrl}&origin=${origin}&destination=${destination}&waypoints=${waypoints}`;
+                    } else {
+                         mapUrl = `${baseMapUrl}&destination=${destination}`;
+                    }
                 }
 
                 let itineraryHtml = `<h2 class="!text-3xl">${crawlData.crawlName}</h2>`;
@@ -438,6 +442,7 @@
     </script>
 </body>
 </html>
+
 
 
 
