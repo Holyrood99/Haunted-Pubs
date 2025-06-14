@@ -258,10 +258,10 @@
                 const result = await response.json();
                 if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
                    return result.candidates[0].content.parts[0].text;
-                } else { throw new Error("No content returned from API."); }
+                } else { return null; }
             } catch (error) {
                 console.error("Gemini API Error:", error);
-                return "Sorry, I couldn't conjure up a response right now. The spirits might be interfering with the signal.";
+                return null;
             }
         }
 
@@ -294,7 +294,7 @@
                 showModal(`A Ghostly Tale from ${pubName}`);
                 const prompt = `Tell me a short, atmospheric, and spooky ghost story (around 150-200 words) set in The ${pubName} in Edinburgh. The pub's lore says that ${lore}. Use this information to inspire the story. Make it feel like a tale told over a pint in a dim, historic pub. Use an old-fashioned, literary tone, like something from the 19th century.`;
                 const story = await callGemini(prompt);
-                const formattedStory = story.replace(/\n/g, '<p class="mt-4"></p>');
+                const formattedStory = story ? story.replace(/\n/g, '<p class="mt-4"></p>') : '<p>The spirits are quiet right now. Please try again later.</p>';
                 updateModalContent(`<p class="body-font">${formattedStory}</p>`);
             });
         });
@@ -324,7 +324,7 @@
             const selectedPubNames = Array.from(selectedCheckboxes).map(cb => cb.dataset.pubName);
             showModal('Generating Your Itinerary...');
 
-            const prompt = `I wish to plan a historic pub crawl in Edinburgh, visiting these establishments: ${selectedPubNames.join(', ')}. Please create a fun itinerary for me. Give the crawl a creative, thematic name in an old-fashioned style. Then, list the pubs in a logical order for a walking tour. For each pub, provide a short, interesting "Tidbit of Lore" or "A Publican's Tip".`;
+            const prompt = `I wish to plan a historic pub crawl in Edinburgh, visiting these establishments: ${selectedPubNames.join(', ')}. Please create a fun itinerary for me. Give the crawl a creative, thematic name in an old-fashioned style. Then, list the pubs in a logical order for a walking tour. For each pub, provide a short, interesting "Tidbit of Lore" or "A Publican's Tip". The entire response must be ONLY the JSON object that conforms to the provided schema, with no other text or explanation.`;
             
             const schema = {
               type: "OBJECT", properties: { "crawlName": { "type": "STRING" }, "itinerary": { "type": "ARRAY", "items": { "type": "OBJECT", "properties": { "pubName": { "type": "STRING" }, "order": { "type": "INTEGER" }, "tip": { "type": "STRING" } }, "required": ["pubName", "order", "tip"] } } }, "required": ["crawlName", "itinerary"]
@@ -332,33 +332,39 @@
 
             const responseText = await callGemini(prompt, { responseMimeType: "application/json", responseSchema: schema });
             
+            if (!responseText) {
+                updateModalContent('<p class="body-font">Apologies, the spirits seem to be interfering with the connection. We could not generate an itinerary at this time. Please try again.</p>');
+                return;
+            }
+
             try {
+                // Sanitize the response to ensure it's a valid JSON string
                 let jsonString = responseText;
-                const startIndex = jsonString.indexOf('{');
-                const endIndex = jsonString.lastIndexOf('}');
-                if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-                    jsonString = jsonString.substring(startIndex, endIndex + 1);
-                } else {
+                const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
                     throw new Error("No valid JSON object found in the response.");
                 }
+                jsonString = jsonMatch[0];
 
                 const crawlData = JSON.parse(jsonString);
 
-                if (!crawlData.itinerary || !Array.isArray(crawlData.itinerary)) {
-                    throw new Error("Invalid itinerary format in the response.");
+                if (typeof crawlData !== 'object' || crawlData === null || !Array.isArray(crawlData.itinerary)) {
+                    throw new Error("Invalid itinerary data received from the server.");
                 }
 
                 crawlData.itinerary.sort((a, b) => a.order - b.order);
 
-                // --- Map URL Generation ---
                 const orderedPubs = crawlData.itinerary.map(stop => stop.pubName);
+                if (orderedPubs.some(name => !pubAddresses[name])) {
+                    throw new Error("Received an unknown pub name from the API.");
+                }
+
+                // --- Map URL Generation ---
                 const markerLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
                 const mapsApiKey = "AIzaSyCUWUiYFlVr2kxtMTFunKeIdKdp9aLeFtA"; 
 
-                let origin = originPoint; // User's location or first pub
                 let markersString = '';
-                let pathString = '';
-
+                
                 if (originPoint) {
                      markersString = `markers=color:green|label:S|${originPoint}&`;
                 }
@@ -370,7 +376,7 @@
                 }).join('&');
                 
                 const allPoints = originPoint ? [originPoint, ...orderedPubs.map(name => pubAddresses[name])] : orderedPubs.map(name => pubAddresses[name]);
-                pathString = `path=color:0x4a5568|weight:5|` + allPoints.map(point => encodeURIComponent(point)).join('|');
+                const pathString = `path=color:0x4a5568|weight:5|` + allPoints.map(point => encodeURIComponent(point)).join('|');
 
                 const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?size=600x300&maptype=roadmap&${markersString}&${pathString}&key=${mapsApiKey}`;
 
@@ -430,6 +436,7 @@
     </script>
 </body>
 </html>
+
 
 
 
