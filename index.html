@@ -333,15 +333,21 @@
             const responseText = await callGemini(prompt, { responseMimeType: "application/json", responseSchema: schema });
             
             try {
-                let cleanResponseText = responseText.trim();
-                if (cleanResponseText.startsWith('```json')) {
-                    cleanResponseText = cleanResponseText.substring(7);
-                    if (cleanResponseText.endsWith('```')) {
-                        cleanResponseText = cleanResponseText.slice(0, -3);
-                    }
+                let jsonString = responseText;
+                const startIndex = jsonString.indexOf('{');
+                const endIndex = jsonString.lastIndexOf('}');
+                if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+                    jsonString = jsonString.substring(startIndex, endIndex + 1);
+                } else {
+                    throw new Error("No valid JSON object found in the response.");
                 }
 
-                const crawlData = JSON.parse(cleanResponseText);
+                const crawlData = JSON.parse(jsonString);
+
+                if (!crawlData.itinerary || !Array.isArray(crawlData.itinerary)) {
+                    throw new Error("Invalid itinerary format in the response.");
+                }
+
                 crawlData.itinerary.sort((a, b) => a.order - b.order);
 
                 // --- Map URL Generation ---
@@ -424,5 +430,6 @@
     </script>
 </body>
 </html>
+
 
 
