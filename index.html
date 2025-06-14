@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Edinburgh Pub Guide</title>
+    <title>High Street Haunts: An Interactive Guide to Cursed Pubs & Cold Pints</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,22 +25,25 @@
              font-family: 'Montserrat', sans-serif;
         }
         .pairing-box {
-            border-left: 4px solid #475569; /* Slate 600 */
-            background-color: #f1f5f9; /* Slate 100 */
+            border-left: 4px solid #4a5568; /* Slate blue */
+            background-color: #f1f5f9; /* Lighter slate blue */
             margin-top: 1rem;
             padding: 1rem;
             border-radius: 0 4px 4px 0;
         }
-        .gemini-button {
-            background-color: #475569; /* Slate 600 */
+        .gemini-button, .map-button {
+            background-color: #4a5568; /* Slate blue */
             color: #ffffff;
             font-family: 'Montserrat', sans-serif;
             font-weight: 700;
             transition: background-color 0.3s ease;
             border-radius: 0.375rem;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
-        .gemini-button:hover {
-            background-color: #334155; /* Slate 700 */
+        .gemini-button:hover, .map-button:hover {
+            background-color: #2d3748; /* Darker slate blue on hover */
         }
         #modal-backdrop {
             display: none;
@@ -64,7 +67,7 @@
         }
         .loader {
             border: 4px solid #e2e8f0;
-            border-top: 4px solid #475569;
+            border-top: 4px solid #4a5568;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -86,8 +89,8 @@
         
         <!-- Header Section -->
         <header class="text-center p-8 md:p-12 bg-transparent">
-            <h1 class="heading-font text-4xl md:text-5xl text-gray-800">Edinburgh Through a Pint Glass</h1>
-            <h2 class="text-xl md:text-2xl text-gray-600 mt-2 body-font">An Interactive Guide to the City's Oldest Pubs</h2>
+            <h1 class="heading-font text-4xl md:text-5xl text-gray-800">High Street Haunts</h1>
+            <h2 class="text-xl md:text-2xl text-gray-600 mt-2 body-font">An Interactive Guide to Cursed Pubs & Cold Pints</h2>
         </header>
 
         <!-- Pubs Section -->
@@ -235,6 +238,16 @@
         const modalLoader = document.getElementById('modal-loader');
         const modalCloseBtn = document.getElementById('modal-close-btn');
 
+        const pubAddresses = {
+            "The White Hart Inn": "The White Hart Inn, Grassmarket, Edinburgh",
+            "Deacon Brodie's Tavern": "Deacon Brodie's Tavern, Lawnmarket, Edinburgh",
+            "The Last Drop": "The Last Drop, Grassmarket, Edinburgh",
+            "The Tolbooth Tavern": "The Tolbooth Tavern, Canongate, Edinburgh",
+            "The Banshee Labyrinth": "Banshee Labyrinth, Niddry Street, Edinburgh",
+            "The Jolly Judge": "The Jolly Judge, James Court, Edinburgh",
+            "The World's End": "The World's End, High Street, Edinburgh"
+        };
+
         async function callGemini(prompt, generationConfig = {}) {
             const apiKey = ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
@@ -299,12 +312,12 @@
             `;
             pubSelectionContainer.innerHTML += checkboxHTML;
         });
-
-        document.getElementById('plan-crawl-btn').addEventListener('click', async () => {
+        
+        async function generateItinerary(originPoint) {
             const selectedCheckboxes = document.querySelectorAll('#pub-selection input:checked');
-            if (selectedCheckboxes.length < 2) {
+             if (selectedCheckboxes.length < 1) {
                 showModal('Selection Required');
-                updateModalContent('<p class="body-font">Please select at least two pubs to plan your crawl.</p>');
+                updateModalContent('<p class="body-font">Please select at least one pub to plan your crawl.</p>');
                 return;
             }
 
@@ -320,20 +333,96 @@
             const responseText = await callGemini(prompt, { responseMimeType: "application/json", responseSchema: schema });
             
             try {
-                const crawlData = JSON.parse(responseText);
+                let cleanResponseText = responseText.trim();
+                if (cleanResponseText.startsWith('```json')) {
+                    cleanResponseText = cleanResponseText.substring(7);
+                    if (cleanResponseText.endsWith('```')) {
+                        cleanResponseText = cleanResponseText.slice(0, -3);
+                    }
+                }
+
+                const crawlData = JSON.parse(cleanResponseText);
                 crawlData.itinerary.sort((a, b) => a.order - b.order);
-                let itineraryHtml = `<h2 class="!text-3xl">${crawlData.crawlName}</h2><ol class="list-decimal list-inside mt-4 space-y-4">`;
-                crawlData.itinerary.forEach(stop => {
-                    itineraryHtml += `<li class="pl-2 body-font"><strong class="!text-xl heading-font">${stop.pubName}</strong><p class="pl-5 italic text-gray-600">"${stop.tip}"</p></li>`;
+
+                // --- Map URL Generation ---
+                const orderedPubs = crawlData.itinerary.map(stop => stop.pubName);
+                const markerLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                const mapsApiKey = "AIzaSyCUWUiYFlVr2kxtMTFunKeIdKdp9aLeFtA"; 
+
+                let origin = originPoint; // User's location or first pub
+                let markersString = '';
+                let pathString = '';
+
+                if (originPoint) {
+                     markersString = `markers=color:green|label:S|${originPoint}&`;
+                }
+                
+                markersString += orderedPubs.map((pubName, index) => {
+                    const address = encodeURIComponent(pubAddresses[pubName]);
+                    const label = markerLabels[index % markerLabels.length];
+                    return `markers=color:0x2d3748|label:${label}|${address}`;
+                }).join('&');
+                
+                const allPoints = originPoint ? [originPoint, ...orderedPubs.map(name => pubAddresses[name])] : orderedPubs.map(name => pubAddresses[name]);
+                pathString = `path=color:0x4a5568|weight:5|` + allPoints.map(point => encodeURIComponent(point)).join('|');
+
+                const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?size=600x300&maptype=roadmap&${markersString}&${pathString}&key=${mapsApiKey}`;
+
+                // Interactive map URL
+                let mapUrl;
+                if(originPoint) {
+                    const destination = encodeURIComponent(pubAddresses[orderedPubs[orderedPubs.length - 1]]);
+                    const waypoints = orderedPubs.slice(0, -1).map(pubName => encodeURIComponent(pubAddresses[pubName])).join('|');
+                     mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${originPoint}&destination=${destination}&waypoints=${waypoints}&travelmode=walking`;
+                } else {
+                    const firstPub = encodeURIComponent(pubAddresses[orderedPubs[0]]);
+                    const lastPub = encodeURIComponent(pubAddresses[orderedPubs[orderedPubs.length - 1]]);
+                    const midWaypoints = orderedPubs.slice(1, -1).map(pubName => encodeURIComponent(pubAddresses[pubName])).join('|');
+                    mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${firstPub}&destination=${lastPub}&waypoints=${midWaypoints}&travelmode=walking`;
+                }
+
+                let itineraryHtml = `<h2 class="!text-3xl">${crawlData.crawlName}</h2>`;
+                itineraryHtml += `<img src="${staticMapUrl}" alt="Map of the pub crawl route" class="w-full h-auto rounded-md my-4 shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/600x300/e2e8f0/4a5568/png?text=Map+Could+Not+Load'; this.alt='Map could not be loaded.';">`
+                itineraryHtml += `<ol class="list-decimal list-inside mt-4 space-y-4">`;
+                crawlData.itinerary.forEach((stop, index) => {
+                    const label = markerLabels[index % markerLabels.length];
+                    itineraryHtml += `<li class="pl-2 body-font"><strong class="!text-xl heading-font">(${label}) ${stop.pubName}</strong><p class="pl-5 italic text-gray-600">"${stop.tip}"</p></li>`;
                 });
                 itineraryHtml += '</ol>';
+                itineraryHtml += `<a href="${mapUrl}" target="_blank" class="map-button py-3 px-6 text-lg mt-6 w-full">Open Route in Google Maps</a>`;
+                
                 modalTitle.textContent = "Your Custom Itinerary";
                 updateModalContent(itineraryHtml);
+
             } catch (e) {
-                console.error("Failed to parse JSON from Gemini", e);
-                updateModalContent(`<p>Here is your suggested plan:</p><p class="body-font">${responseText.replace(/\n/g, '<br>')}</p>`);
+                console.error("Failed to parse JSON from Gemini:", e, "Raw response:", responseText);
+                updateModalContent('<p class="body-font">Apologies, the spirits seem to be interfering with the connection. We could not generate an itinerary at this time. Please try again.</p>');
+            }
+        }
+
+        document.getElementById('plan-crawl-btn').addEventListener('click', () => {
+             if (navigator.geolocation) {
+                showModal('Getting Your Location...');
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLocation = `${position.coords.latitude},${position.coords.longitude}`;
+                        generateItinerary(userLocation);
+                    },
+                    () => {
+                        // Handle error or user denial
+                        showModal('Location Denied');
+                        updateModalContent('<p class="body-font">Could not get your location. Generating a route between the selected pubs instead.</p>');
+                        // Generate itinerary without a starting point after a short delay
+                        setTimeout(() => generateItinerary(null), 1500);
+                    }
+                );
+            } else {
+                // Geolocation not supported
+                generateItinerary(null);
             }
         });
     </script>
 </body>
 </html>
+
+
