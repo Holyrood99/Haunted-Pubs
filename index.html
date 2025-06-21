@@ -65,6 +65,10 @@
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
         }
+        #modal-content {
+            max-height: 60vh; /* Set a max height */
+            overflow-y: auto; /* Add vertical scrollbar if content overflows */
+        }
         .loader {
             border: 4px solid #e2e8f0;
             border-top: 4px solid #4a5568;
@@ -375,7 +379,7 @@
                     const pubName = pubCard.dataset.pubName;
                     const lore = pubCard.dataset.lore;
                     showModal(`A Ghostly Tale from ${pubName}`);
-                    const prompt = `Tell me a short, atmospheric, and spooky ghost story (around 150-200 words) set in The ${pubName} in Edinburgh. The pub's lore says that ${lore}. Use this information to inspire the story. Make it feel like a tale told over a pint in a dim, historic pub. Use an old-fashioned, literary tone, like something from the 19th century.`;
+                    const prompt = `Tell me a very short, atmospheric, and spooky ghost story (around 50-75 words) set in The ${pubName} in Edinburgh. The pub's lore says that ${lore}. Use this information to inspire the story. Make it feel like a tale told over a pint in a dim, historic pub. Use an old-fashioned, literary tone.`;
                     const story = await callGemini(prompt);
                     const formattedStory = story ? story.replace(/\n/g, '<p class="mt-4"></p>') : '<p>The spirits are quiet right now. Please try again later.</p>';
                     updateModalContent(`<p class="body-font">${formattedStory}</p>`);
