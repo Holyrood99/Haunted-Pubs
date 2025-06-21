@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High Street Haunts: An Interactive Guide to Cursed Pubs & Cold Pints</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f1f5f9; /* Lighter slate background */
+        }
+        .main-container {
+            background-color: #ffffff; /* White content area */
+            border: 1px solid #e2e8f0; /* Slate border */
+        }
+        .heading-font {
+            font-family: 'IM Fell English SC', serif;
+            letter-spacing: 0.05em;
+        }
+        .body-font {
+             font-family: 'Montserrat', sans-serif;
+        }
+        .pairing-box {
+            border-left: 4px solid #4a5568; /* Slate blue */
+            background-color: #f1f5f9; /* Lighter slate blue */
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0 4px 4px 0;
+        }
+        .gemini-button, .map-button {
+            background-color: #4a5568; /* Slate blue */
+            color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .gemini-button:hover, .map-button:hover {
+            background-color: #2d3748; /* Darker slate blue on hover */
+        }
+        #modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        #modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+        .loader {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #4a5568;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .prose h2, .prose strong, .prose li {
+             font-family: 'IM Fell English SC', serif;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Main App Container -->
+    <div class="main-container max-w-4xl mx-auto rounded-xl shadow-lg overflow-hidden">
+        
+        <!-- Header Section -->
+        <header class="text-center p-8 md:p-12 bg-transparent">
+            <h1 class="heading-font text-4xl md:text-5xl text-gray-800">High Street Haunts</h1>
+            <h2 class="text-xl md:text-2xl text-gray-600 mt-2 body-font">An Interactive Guide to Cursed Pubs & Cold Pints</h2>
+        </header>
+
+        <!-- Pubs Section -->
+        <main id="pubs-list" class="p-6 md:p-10 grid gap-12 bg-transparent">
+
+            <!-- The White Hart Inn -->
+            <div class="pub-card" data-pub-name="The White Hart Inn" data-lore="it is haunted by disembodied footsteps, shadowy figures in the cellar, and was frequented by the murderers Burke and Hare.">
+                <div class="grid md:grid-cols-[100px,1fr] gap-6 items-start">
+                    <div class="flex justify-center pt-2">
+                        <img src="https://i.imgur.com/gghShm1.jpeg" alt="A majestic white stag in a forest" class="w-24 h-24 rounded-full object-cover shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/4a5568/png?text=Pub';">
+                    </div>
+                    <div>
+                        <h3 class="heading-font text-3xl text-gray-900">The White Hart Inn</h3>
+                        <p class="mt-2 text-gray-700 body-font">Claiming to be one of Edinburgh's oldest pubs (c. 1516), it's where Robert Burns penned "Ae Fond Kiss." The infamous murderers Burke and Hare are said to have found victims here, and its haunted cellars are known for disembodied footsteps and shadowy figures.</p>
+                        <div class="pairing-box"><h4 class="font-bold heading-font text-slate-800">The Pairing:</h4><p class="text-slate-700 body-font">A pint of <strong class="font-bold">Deuchars IPA</strong>.</p></div>
+                        <button class="gemini-button py-2 px-4 mt-4 w-full md:w-auto ghost-story-btn">Tell Me a Ghost Story</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deacon Brodie's Tavern -->
+            <div class="pub-card" data-pub-name="Deacon Brodie's Tavern" data-lore="it's named after William Brodie, a respectable councillor by day and a notorious burglar by night, who inspired 'Dr. Jekyll and Mr. Hyde'.">
+                 <div class="grid md:grid-cols-[100px,1fr] gap-6 items-start">
+                    <div class="flex justify-center pt-2">
+                        <img src="https://i.imgur.com/op6d6Mp.jpeg" alt="A drama mask representing duality" class="w-24 h-24 rounded-full object-cover shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/4a5568/png?text=Pub';">
+                    </div>
+                    <div>
+                        <h3 class="heading-font text-3xl text-gray-900">Deacon Brodie's Tavern</h3>
+                        <p class="mt-2 text-gray-700 body-font">Named for William Brodie, a respectable councillor by day and a notorious burglar by night. His dual life is believed to have inspired Robert Louis Stevenson's *The Strange Case of Dr. Jekyll and Mr. Hyde*.</p>
+                        <div class="pairing-box"><h4 class="font-bold heading-font text-slate-800">The Pairing:</h4><p class="text-slate-700 body-font">A complex <strong class="font-bold">single malt whisky</strong>.</p></div>
+                        <button class="gemini-button py-2 px-4 mt-4 w-full md:w-auto ghost-story-btn">Tell Me a Ghost Story</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- The Last Drop -->
+            <div class="pub-card" data-pub-name="The Last Drop" data-lore="it's located where public executions took place and is haunted by the ghost of a young girl. The name refers to the final drink given to the condemned.">
+                 <div class="grid md:grid-cols-[100px,1fr] gap-6 items-start">
+                    <div class="flex justify-center pt-2">
+                        <img src="https://i.imgur.com/CwI8CCL.jpeg" alt="A hangman's noose" class="w-24 h-24 rounded-full object-cover shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/4a5568/png?text=Pub';">
+                    </div>
+                    <div>
+                        <h3 class="heading-font text-3xl text-gray-900">The Last Drop</h3>
+                        <p class="mt-2 text-gray-700 body-font">This Grassmarket pub's name refers to the final drink given to prisoners before their public execution on the gallows that once stood nearby. The building is said to be haunted by the ghost of a young girl.</p>
+                        <div class="pairing-box"><h4 class="font-bold heading-font text-slate-800">The Pairing:</h4><p class="text-slate-700 body-font">A pint of <strong class="font-bold">Ossian Golden Ale</strong>.</p></div>
+                        <button class="gemini-button py-2 px-4 mt-4 w-full md:w-auto ghost-story-btn">Tell Me a Ghost Story</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Tolbooth Tavern -->
+            <div class="pub-card" data-pub-name="The Tolbooth Tavern" data-lore="it's housed in a former prison and courthouse. A mischievous spirit is known to throw glasses.">
+                 <div class="grid md:grid-cols-[100px,1fr] gap-6 items-start">
+                    <div class="flex justify-center pt-2">
+                        <img src="https://i.imgur.com/jpjlBOp.jpeg" alt="An old stone tower" class="w-24 h-24 rounded-full object-cover shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/4a5568/png?text=Pub';">
+                    </div>
+                    <div>
+                        <h3 class="heading-font text-3xl text-gray-900">The Tolbooth Tavern</h3>
+                        <p class="mt-2 text-gray-700 body-font">Housed in a 16th-century courthouse and prison, the walls of this tavern have absorbed centuries of human drama. A mischievous spirit is known to throw glasses, and an eerie presence is often felt.</p>
+                        <div class="pairing-box"><h4 class="font-bold heading-font text-slate-800">The Pairing:</h4><p class="text-slate-700 body-font">A robust pint of <strong class="font-bold">Belhaven Best</strong>.</p></div>
+                        <button class="gemini-button py-2 px-4 mt-4 w-full md:w-auto ghost-story-btn">Tell Me a Ghost Story</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Banshee Labyrinth -->
+            <div class="pub-card" data-pub-name="The Banshee Labyrinth" data-lore="it's located in the haunted South Bridge vaults and is home to a screaming banshee and a dark figure known as 'The Watcher'.">
+                 <div class="grid md:grid-cols-[100px,1fr] gap-6 items-start">
+                    <div class="flex justify-center pt-2">
+                        <img src="https://i.imgur.com/gRYomDh.jpeg" alt="A ghostly figure in a dark hallway" class="w-24 h-24 rounded-full object-cover shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/4a5568/png?text=Pub';">
+                    </div>
+                    <div>
+                        <h3 class="heading-font text-3xl text-gray-900">The Banshee Labyrinth</h3>
+                        <p class="mt-2 text-gray-700 body-font">Located in the infamous South Bridge vaults, this is claimed to be Scotland's most haunted pub. It is said to be home to a banshee whose screams herald a death, among other menacing spirits in its maze of tunnels.</p>
+                        <div class="pairing-box"><h4 class="font-bold heading-font text-slate-800">The Pairing:</h4><p class="text-slate-700 body-font">A <strong class="font-bold">dark, mysterious stout</strong> like Guinness.</p></div>
+                        <button class="gemini-button py-2 px-4 mt-4 w-full md:w-auto ghost-story-btn">Tell Me a Ghost Story</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Whistlebinkies Live Music Bar -->
+            <div class="pub-card" data-pub-name="Whistlebinkies" data-lore="it is also located deep in the South Bridge Vaults. The most famous ghost is 'The Watcher,' a sullen figure in a 17th-century coat who stands in the dark corners of the vaults.">
+                 <div class="grid md:grid-cols-[100px,1fr] gap-6 items-start">
+                    <div class="flex justify-center pt-2">
+                        <img src="https://i.imgur.com/MhsvvXl.jpeg" alt="A dark stone archway in an underground vault" class="w-24 h-24 rounded-full object-cover shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/4a5568/png?text=Pub';">
+                    </div>
+                    <div>
+                        <h3 class="heading-font text-3xl text-gray-900">Whistlebinkies</h3>
+                        <p class="mt-2 text-gray-700 body-font">Another cavernous venue in the South Bridge vaults, known for its nightly live music and raw stone walls that have witnessed centuries of misery. The most persistent spirit is 'The Watcher,' a grim figure who sometimes appears in the darkness.</p>
+                        <div class="pairing-box"><h4 class="font-bold heading-font text-slate-800">The Pairing:</h4><p class="text-slate-700 body-font">A shot of <strong class="font-bold">something strong</strong> to steady the nerves before the music starts.</p></div>
+                        <button class="gemini-button py-2 px-4 mt-4 w-full md:w-auto ghost-story-btn">Tell Me a Ghost Story</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Mitre Bar -->
+            <div class="pub-card" data-pub-name="The Mitre Bar" data-lore="the pub stands on the site of the former residence of an archbishop, whose spectral figure is said to haunt the premises.">
+                <div class="grid md:grid-cols-[100px,1fr] gap-6 items-start">
+                   <div class="flex justify-center pt-2">
+                        <img src="https://i.imgur.com/Z4S2mMP.jpeg" alt="A stained glass window with intricate patterns" class="w-24 h-24 rounded-full object-cover shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/4a5568/png?text=Pub';">
+                   </div>
+                   <div>
+                       <h3 class="heading-font text-3xl text-gray-900">The Mitre Bar</h3>
+                       <p class="mt-2 text-gray-700 body-font">A classic Royal Mile pub with a dark secret. It stands on ground that once belonged to a powerful archbishop, whose phantom is said to appear, perhaps still overseeing his historic domain from beyond the grave.</p>
+                       <div class="pairing-box"><h4 class="font-bold heading-font text-slate-800">The Pairing:</h4><p class="text-slate-700 body-font">A heavenly pint of <strong class="font-bold">Stewart Brewing's Holyrood</strong>.</p></div>
+                       <button class="gemini-button py-2 px-4 mt-4 w-full md:w-auto ghost-story-btn">Tell Me a Ghost Story</button>
+                   </div>
+               </div>
+           </div>
+
+            <!-- The Jolly Judge -->
+            <div class="pub-card" data-pub-name="The Jolly Judge" data-lore="it's a hidden gem in a 17th-century courtyard. Its name evokes the countless unofficial 'judgements' passed by patrons over the centuries.">
+                 <div class="grid md:grid-cols-[100px,1fr] gap-6 items-start">
+                    <div class="flex justify-center pt-2">
+                         <img src="https://i.imgur.com/6i2fbGW.jpeg" alt="A judge's gavel on a book" class="w-24 h-24 rounded-full object-cover shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/4a5568/png?text=Pub';">
+                    </div>
+                    <div>
+                        <h3 class="heading-font text-3xl text-gray-900">The Jolly Judge</h3>
+                        <p class="mt-2 text-gray-700 body-font">Tucked away down a close off the Lawnmarket, this award-winning pub is a true hidden treasure. With its low-beamed ceilings and real log fire, it feels like stepping back in time, offering a cozy refuge from the Royal Mile's bustle and a fine spot for quiet contemplation (or judgement).</p>
+                        <div class="pairing-box"><h4 class="font-bold heading-font text-slate-800">The Pairing:</h4><p class="text-slate-700 body-font">A <strong class="font-bold">prize-winning cask ale</strong> from a local brewery.</p></div>
+                        <button class="gemini-button py-2 px-4 mt-4 w-full md:w-auto ghost-story-btn">Tell Me a Ghost Story</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The World's End -->
+            <div class="pub-card" data-pub-name="The World's End" data-lore="it stands beside the old Flodden Wall. To 16th-century residents, the city gates here were the edge of their known world, and anything beyond was hostile territory.">
+                 <div class="grid md:grid-cols-[100px,1fr] gap-6 items-start">
+                    <div class="flex justify-center pt-2">
+                        <img src="https://i.imgur.com/YWq7vix.jpeg" alt="An old fortified stone gate in a city wall" class="w-24 h-24 rounded-full object-cover shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/4a5568/png?text=Pub';">
+                    </div>
+                    <div>
+                        <h3 class="heading-font text-3xl text-gray-900">The World's End</h3>
+                        <p class="mt-2 text-gray-700 body-font">This pub's name comes from its location beside the Flodden Wall. In the 16th century, the gates next to the pub were the boundary of the city. For the locals, the world literally ended here; anything beyond the safety of the wall was another country, often hostile.</p>
+                        <div class="pairing-box"><h4 class="font-bold heading-font text-slate-800">The Pairing:</h4><p class="text-slate-700 body-font">A <strong class="font-bold">traditional 80 Shilling ale</strong>, as robust as the old city wall.</p></div>
+                        <button class="gemini-button py-2 px-4 mt-4 w-full md:w-auto ghost-story-btn">Tell Me a Ghost Story</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Pub Crawl Planner -->
+        <section class="p-6 md:p-10 bg-white border-t border-gray-200">
+            <h3 class="heading-font text-3xl text-gray-900 text-center">Plan Your Pub Crawl</h3>
+            <p class="text-center text-gray-600 mt-2 max-w-2xl mx-auto body-font">Select the pubs you wish to visit, and we'll generate a custom itinerary for you!</p>
+            <div id="pub-selection" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Checkboxes will be populated by JS -->
+            </div>
+            <div class="text-center mt-6">
+                 <button id="plan-crawl-btn" class="gemini-button py-3 px-6 text-lg">Plan My Pub Crawl</button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Modal -->
+    <div id="modal-backdrop"></div>
+    <div id="modal" class="w-11/12 md:max-w-2xl rounded-lg shadow-xl p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h4 id="modal-title" class="text-2xl heading-font text-gray-800"></h4>
+            <button id="modal-close-btn" class="text-gray-500 hover:text-gray-800 text-4xl leading-none font-thin">&times;</button>
+        </div>
+        <div id="modal-content" class="text-gray-700 prose max-w-none body-font"></div>
+        <div id="modal-loader" class="flex justify-center items-center p-8">
+            <div class="loader"></div>
+        </div>
+    </div>
+    
+    <script type="module">
+        const modal = document.getElementById('modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalLoader = document.getElementById('modal-loader');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        const pubAddresses = {
+            "The White Hart Inn": "The White Hart Inn, Grassmarket, Edinburgh",
+            "Deacon Brodie's Tavern": "Deacon Brodie's Tavern, Lawnmarket, Edinburgh",
+            "The Last Drop": "The Last Drop, Grassmarket, Edinburgh",
+            "The Tolbooth Tavern": "The Tolbooth Tavern, Canongate, Edinburgh",
+            "The Banshee Labyrinth": "Banshee Labyrinth, Niddry Street, Edinburgh",
+            "Whistlebinkies": "Whistlebinkies Live Music Bar, South Bridge, Edinburgh",
+            "The Mitre Bar": "The Mitre Bar, High Street, Edinburgh",
+            "The Jolly Judge": "The Jolly Judge, James Court, Edinburgh",
+            "The World's End": "The World's End, High Street, Edinburgh"
+        };
+
+        async function callGemini(prompt, generationConfig = {}) {
+            const apiKey = "AIzaSyApXUcdY1hMaUQ5a4EgHy2AvPDLoHCOCxA"; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig };
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`API call failed with status: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                   return result.candidates[0].content.parts[0].text;
+                } else { return null; }
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                return null;
+            }
+        }
+
+        function showModal(title) {
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalLoader.style.display = 'flex';
+            modalBackdrop.style.display = 'block';
+            modal.style.display = 'block';
+        }
+
+        function hideModal() {
+            modalBackdrop.style.display = 'none';
+            modal.style.display = 'none';
+        }
+
+        function updateModalContent(htmlContent) {
+            modalLoader.style.display = 'none';
+            modalContent.innerHTML = htmlContent;
+        }
+
+        modalCloseBtn.addEventListener('click', hideModal);
+        modalBackdrop.addEventListener('click', hideModal);
+
+        const pubsList = document.getElementById('pubs-list');
+        pubsList.addEventListener('click', async (e) => {
+            const button = e.target.closest('.ghost-story-btn');
+            if (button) {
+                const pubCard = button.closest('.pub-card');
+                if (pubCard) {
+                    const pubName = pubCard.dataset.pubName;
+                    const lore = pubCard.dataset.lore;
+                    showModal(`A Ghostly Tale from ${pubName}`);
+                    const prompt = `Tell me a short, atmospheric, and spooky ghost story (around 150-200 words) set in The ${pubName} in Edinburgh. The pub's lore says that ${lore}. Use this information to inspire the story. Make it feel like a tale told over a pint in a dim, historic pub. Use an old-fashioned, literary tone, like something from the 19th century.`;
+                    const story = await callGemini(prompt);
+                    const formattedStory = story ? story.replace(/\n/g, '<p class="mt-4"></p>') : '<p>The spirits are quiet right now. Please try again later.</p>';
+                    updateModalContent(`<p class="body-font">${formattedStory}</p>`);
+                }
+            }
+        });
+        
+        const pubSelectionContainer = document.getElementById('pub-selection');
+        const allPubs = document.querySelectorAll('.pub-card');
+
+        allPubs.forEach(pub => {
+            const pubName = pub.dataset.pubName;
+            const checkboxHTML = `
+                <label class="flex items-center space-x-3 p-3 bg-slate-100 rounded-md hover:bg-slate-200 cursor-pointer transition-colors">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-slate-600 border-gray-300 rounded focus:ring-slate-500" data-pub-name="${pubName}">
+                    <span class="text-gray-800 heading-font">${pubName}</span>
+                </label>
+            `;
+            pubSelectionContainer.innerHTML += checkboxHTML;
+        });
+        
+        async function generateItinerary(originPoint) {
+            const selectedCheckboxes = document.querySelectorAll('#pub-selection input:checked');
+             if (selectedCheckboxes.length < 1) {
+                showModal('Selection Required');
+                updateModalContent('<p class="body-font">Please select at least one pub to plan your crawl.</p>');
+                return;
+            }
+
+            const selectedPubNames = Array.from(selectedCheckboxes).map(cb => cb.dataset.pubName);
+            showModal('Generating Your Itinerary...');
+
+            const prompt = `I wish to plan a historic pub crawl in Edinburgh, visiting these establishments: ${selectedPubNames.join(', ')}. Please create a fun itinerary for me. Give the crawl a creative, thematic name in an old-fashioned style. Then, list the pubs in a logical order for a walking tour. For each pub, provide a short, interesting "Tidbit of Lore" or "A Publican's Tip". The entire response must be ONLY the JSON object that conforms to the provided schema, with no other text or explanation.`;
+            
+            const schema = {
+              type: "OBJECT", properties: { "crawlName": { "type": "STRING" }, "itinerary": { "type": "ARRAY", "items": { "type": "OBJECT", "properties": { "pubName": { "type": "STRING" }, "order": { "type": "INTEGER" }, "tip": { "type": "STRING" } }, "required": ["pubName", "order", "tip"] } } }, "required": ["crawlName", "itinerary"]
+            };
+
+            const responseText = await callGemini(prompt, { responseMimeType: "application/json", responseSchema: schema });
+            
+            if (!responseText) {
+                updateModalContent('<p class="body-font">Apologies, the spirits seem to be interfering with the connection. We could not generate an itinerary at this time. Please try again.</p>');
+                return;
+            }
+
+            try {
+                let jsonString = responseText;
+                const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error("No valid JSON object found in the response.");
+                }
+                jsonString = jsonMatch[0];
+
+                const crawlData = JSON.parse(jsonString);
+
+                if (typeof crawlData !== 'object' || crawlData === null || !Array.isArray(crawlData.itinerary)) {
+                    throw new Error("Invalid itinerary data received from the server.");
+                }
+
+                crawlData.itinerary.sort((a, b) => a.order - b.order);
+
+                const orderedPubs = crawlData.itinerary.map(stop => stop.pubName);
+                if (orderedPubs.some(name => !pubAddresses[name])) {
+                    throw new Error("Received an unknown pub name from the API.");
+                }
+
+                // --- Map URL Generation ---
+                const markerLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                const mapsApiKey = "AIzaSyCUWUiYFlVr2kxtMTFunKeIdKdp9aLeFtA"; 
+
+                let markersString = '';
+                
+                if (originPoint) {
+                       markersString = `markers=color:green|label:S|${originPoint}&`;
+                }
+                
+                markersString += orderedPubs.map((pubName, index) => {
+                    const address = encodeURIComponent(pubAddresses[pubName]);
+                    const label = markerLabels[index % markerLabels.length];
+                    return `markers=color:0x2d3748|label:${label}|${address}`;
+                }).join('&');
+                
+                const allPoints = originPoint ? [originPoint, ...orderedPubs.map(name => pubAddresses[name])] : orderedPubs.map(name => pubAddresses[name]);
+                const pathString = `path=color:0x4a5568|weight:5|` + allPoints.map(point => encodeURIComponent(point)).join('|');
+
+                const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?size=600x300&maptype=roadmap&${markersString}&${pathString}&key=${mapsApiKey}`;
+
+                // --- Google Maps Directions URL ---
+                let mapUrl;
+                const baseMapUrl = "https://www.google.com/maps/dir/?api=1&travelmode=walking";
+                const destination = encodeURIComponent(pubAddresses[orderedPubs[orderedPubs.length - 1]]);
+
+                if (originPoint) {
+                    const waypoints = orderedPubs.slice(0, -1).map(pubName => encodeURIComponent(pubAddresses[pubName])).join('|');
+                    mapUrl = `${baseMapUrl}&origin=${encodeURIComponent(originPoint)}&destination=${destination}&waypoints=${waypoints}`;
+                } else {
+                    const origin = encodeURIComponent(pubAddresses[orderedPubs[0]]);
+                    if (orderedPubs.length > 1) {
+                         const waypoints = orderedPubs.slice(1, -1).map(pubName => encodeURIComponent(pubAddresses[pubName])).join('|');
+                         mapUrl = `${baseMapUrl}&origin=${origin}&destination=${destination}&waypoints=${waypoints}`;
+                    } else {
+                         mapUrl = `${baseMapUrl}&destination=${destination}`;
+                    }
+                }
+
+                let itineraryHtml = `<h2 class="!text-3xl">${crawlData.crawlName}</h2>`;
+                itineraryHtml += `<img src="${staticMapUrl}" alt="Map of the pub crawl route" class="w-full h-auto rounded-md my-4 shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/600x300/e2e8f0/4a5568/png?text=Map+Could+Not+Load'; this.alt='Map could not be loaded.';">`
+                itineraryHtml += `<ol class="list-decimal list-inside mt-4 space-y-4">`;
+                crawlData.itinerary.forEach((stop, index) => {
+                    const label = markerLabels[index % markerLabels.length];
+                    itineraryHtml += `<li class="pl-2 body-font"><strong class="!text-xl heading-font">(${label}) ${stop.pubName}</strong><p class="pl-5 italic text-gray-600">"${stop.tip}"</p></li>`;
+                });
+                itineraryHtml += '</ol>';
+                itineraryHtml += `<a href="${mapUrl}" target="_blank" class="map-button py-3 px-6 text-lg mt-6 w-full">Open Route in Google Maps</a>`;
+                
+                modalTitle.textContent = "Your Custom Itinerary";
+                updateModalContent(itineraryHtml);
+
+            } catch (e) {
+                console.error("Failed to parse JSON from Gemini:", e, "Raw response:", responseText);
+                updateModalContent('<p class="body-font">Apologies, the spirits seem to be interfering with the connection. We could not generate an itinerary at this time. Please try again.</p>');
+            }
+        }
+
+        document.getElementById('plan-crawl-btn').addEventListener('click', () => {
+             if (navigator.geolocation) {
+                showModal('Getting Your Location...');
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLocation = `${position.coords.latitude},${position.coords.longitude}`;
+                        generateItinerary(userLocation);
+                    },
+                    () => {
+                        // Handle error or user denial
+                        showModal('Location Denied');
+                        updateModalContent('<p class="body-font">Could not get your location. Generating a route between the selected pubs instead.</p>');
+                        setTimeout(() => generateItinerary(null), 1500);
+                    }
+                );
+            } else {
+                generateItinerary(null);
+            }
+        });
+    </script>
+</body>
+</html>
